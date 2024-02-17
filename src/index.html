@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Chat</title>
+</head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        /* horizontally center */
+        align-items: center;
+        /* vertically center */
+        height: 100vh;
+        /* ensure the body covers the entire viewport height */
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        font-family: Arial, sans-serif;
+    }
+
+    div#chat-container {
+        width: 700px;
+        height: 500px;
+        background-color: white;
+        border-radius: 20px;
+        border: 5px solid black;
+        overflow: auto;
+    }
+
+    div#input {
+        display: flex;
+        justify-content: center;
+        /* horizontally center */
+        width: 400px;
+        padding: 10px;
+        margin-top: 50px;
+    }
+
+    p#recieved {
+        margin-right: 20px;
+        text-align: right;
+        background-color: black;
+    }
+</style>
+
+<body>
+    <div id="chat-container">
+    </div>
+    <div id="input">
+        <input type="text" id="message" placeholder="Type your message here">
+        <button id="send" style="width: 100px;">Send</button>
+</body>
+<script>
+    const name = prompt("Enter your name to join");
+    if (name.length === 0) {
+        alert("Please enter a valid name");
+        location.reload();
+    }
+    const chatContainer = document.getElementById('chat-container');
+    const input = document.getElementById('message');
+    const sendButton = document.getElementById('send');
+
+    const socket = new WebSocket('ws://localhost:5010');
+    socket.onopen = () => {
+        console.log('Connected to the server');
+    }
+    socket.onclose = () => {
+        console.log('Disconnected from the server');
+    }
+    sendButton.addEventListener('click', sendMessage);
+    sendButton.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            sendMessage(event);
+        }
+    });
+    sendButton.addEventListener('submit', sendMessage);
+
+    function sendMessage(event) {
+        if (input.value.length === 0)
+            return;
+        event.preventDefault(); // Prevent form submission
+
+        const message = input.value;
+        console.log('Sending message:', message);
+        socket.send(JSON.stringify({ name, message }));
+
+        chatContainer.innerHTML += `<div style="margin-left: 20px;">You: ${message}</div><br>`;
+        input.value = '';
+    }
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Received message:', data.name, data.message);
+        chatContainer.innerHTML += `<div style="margin-right: 20px; text-align: right;">${data.name} : ${data.message}</div><br>`;
+    }
+</script>
+
+</html>
