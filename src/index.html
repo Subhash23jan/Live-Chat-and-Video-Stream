@@ -63,7 +63,7 @@
     const input = document.getElementById('message');
     const sendButton = document.getElementById('send');
 
-    const socket = new WebSocket('ws://localhost:3000');
+    const socket = new WebSocket('ws://live-chat-and-video-stream.onrender.com');
     socket.onopen = () => {
         console.log('Connected to the server'); // This will be logged on the server
     }
