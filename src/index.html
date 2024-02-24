@@ -44,14 +44,46 @@
         text-align: right;
         background-color: black;
     }
+
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 9999;
+        display: none;
+    }
+
+    .show-toast {
+        display: block;
+        animation: slideIn 0.5s forwards;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(-50%) translateY(100%);
+        }
+
+        to {
+            transform: translateX(-50%) translateY(0);
+        }
+    }
 </style>
 
 <body>
     <div id="chat-container">
     </div>
-    <div id="input">
-        <input type="text" id="message" placeholder="Type your message here">
+    <div id="input"><input type="text" id="message" placeholder="Type your message here">
         <button id="send" style="width: 100px;">Send</button>
+    </div>
+    <div class="toast">
+        You can't send empty messages.
+    </div>
+
 </body>
 <script>
     const name = prompt("Enter your name to join");
@@ -71,16 +103,23 @@
         console.log('Disconnected from the server');
     }
     sendButton.addEventListener('click', sendMessage);
-    sendButton.addEventListener('keypress', (event) => {
+
+    chatContainer.addEventListener('submit', sendMessage);
+
+    input.addEventListener('keypress', function (event) {
         if (event.key === 'Enter') {
             sendMessage(event);
         }
     });
+
+
     sendButton.addEventListener('submit', sendMessage);
 
     function sendMessage(event) {
-        if (input.value.length === 0)
+        if (input.value.length === 0) {
+            showToast();
             return;
+        }
         event.preventDefault(); // Prevent form submission
 
         const message = input.value;
@@ -96,6 +135,15 @@
         console.log('Received message:', data.name, data.message);
         chatContainer.innerHTML += `<div style="margin-right: 20px; text-align: right;">${data.name} : ${data.message}</div><br>`;
     }
+    // Show the toast
+    function showToast() {
+        var toast = document.querySelector('.toast');
+        toast.classList.add('show-toast');
+        setTimeout(function () {
+            toast.classList.remove('show-toast');
+        }, 3000); // Change 3000 to the desired duration of the toast in milliseconds
+    }
+
 </script>
 
 </html>
