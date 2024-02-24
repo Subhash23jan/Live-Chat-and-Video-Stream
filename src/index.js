@@ -1,18 +1,13 @@
-const websocket = require('ws');
+const PORT = process.env.PORT || 3000;
+const INDEX = '/index.html';
 const express = require('express');
-const app = express();
-const path = require('path');
-const http = require('http');
-const server = http.createServer(app);
-app.use(express.static(path.join(__dirname, '/src')));
-app.listen(5000, () => {
+const server = express()
+  .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
+    .listen(PORT, () => console.log(`Listening on ${PORT}`));
+  
+const { Server } = require('ws');
 
-    console.log('Server is running on port 5000');
-});
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-const ws = new websocket.Server({ port: 5010 })
+const ws = new Server({ server });
 
 ws.on('connection', (socket) => {
     console.log('New client connected');
@@ -23,7 +18,7 @@ ws.on('connection', (socket) => {
         const data = JSON.parse(msg);
         console.log(data);
         ws.clients.forEach((client) => {
-            if(client!==socket && client.readyState === websocket.OPEN)
+            if(client!==socket && client.readyState === socket.OPEN)
             client.send(JSON.stringify({ name: data.name, message: data.message }));
         });
 });
