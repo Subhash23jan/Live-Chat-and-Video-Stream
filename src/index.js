@@ -19,7 +19,7 @@ ws.on('connection', (socket) => {
         console.log(data);
         ws.clients.forEach((client) => {
             if(client!==socket && client.readyState === socket.OPEN)
-            client.send(JSON.stringify({ name: data.name, message: data.message }));
+             client.send(JSON.stringify({ name: data.name, message: data.message,eventType:data.eventType }));
         });
 });
 

@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./models/chat_model.js"></script>
     <title>Realtime Chat</title>
 </head>
 <style>
@@ -72,6 +73,26 @@
             transform: translateX(-50%) translateY(0);
         }
     }
+
+    .card-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        align-self: center;
+        position: relative;
+        min-height: 100vh;
+    }
+
+    /* Style for the card */
+    .card {
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
 </style>
 
 <body>
@@ -83,18 +104,27 @@
     <div class="toast">
         You can't send empty messages.
     </div>
+    <div class="card-container">
+        <div class="card" id="typingIndicator">
+            Hii bro
+        </div>
+    </div>
 
 </body>
 <script>
-    const name = prompt("Enter your name to join");
+    var name = prompt("Enter your name to join");
     if (name.length === 0) {
         alert("Please enter a valid name");
-        location.reload();
+        name = "user1";
+        //  location.reload();
     }
+
     const chatContainer = document.getElementById('chat-container');
     const input = document.getElementById('message');
     const sendButton = document.getElementById('send');
+    const typingCard = document.getElementById('typingIndicator');
 
+    //  const socket = new WebSocket('ws://localhost:3000');
     const socket = new WebSocket('wss://live-chat-and-video-stream.onrender.com');
     socket.onopen = () => {
         console.log('Connected to the server'); // This will be logged on the server
@@ -104,36 +134,49 @@
     }
     sendButton.addEventListener('click', sendMessage);
 
-    chatContainer.addEventListener('submit', sendMessage);
-
     input.addEventListener('keypress', function (event) {
         if (event.key === 'Enter') {
             sendMessage(event);
         }
     });
-
-
+    input.addEventListener('input', sendTypingMessage);
     sendButton.addEventListener('submit', sendMessage);
-
+    function sendTypingMessage(event) {
+        if (input.value.length === 0) {
+            return;
+        }
+        const message = input.value;
+        socket.send(JSON.stringify({
+            name: name,
+            message: message,
+            eventType: 'typing'
+        }));
+    }
     function sendMessage(event) {
         if (input.value.length === 0) {
             showToast();
             return;
         }
         event.preventDefault(); // Prevent form submission
-
         const message = input.value;
         console.log('Sending message:', message);
-        socket.send(JSON.stringify({ name, message }));
-
+        socket.send(JSON.stringify({
+            name: name,
+            message: message,
+            eventType: 'send-message'
+        }));
         chatContainer.innerHTML += `<div style="margin-left: 20px;">You: ${message}</div><br>`;
         input.value = '';
     }
 
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log('Received message:', data.name, data.message);
-        chatContainer.innerHTML += `<div style="margin-right: 20px; text-align: right;">${data.name} : ${data.message}</div><br>`;
+        const newChat = JSON.parse(event.data);
+        if (newChat.eventType == 'typing') {
+            typingCard.innerText = newChat.name + ': ' + newChat.message;
+            return;
+        }
+        console.log('Received message:', newChat.name, newChat.message);
+        chatContainer.innerHTML += `<div style="margin-right: 20px; text-align: right;">${newChat.name} : ${newChat.message}</div><br>`;
     }
     // Show the toast
     function showToast() {
