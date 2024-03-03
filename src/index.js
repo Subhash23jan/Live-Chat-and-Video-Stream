@@ -1,26 +1,60 @@
 const PORT = process.env.PORT || 3000;
 const INDEX = '/index.html';
 const express = require('express');
-const server = express()
-  .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
-    .listen(PORT, () => console.log(`Listening on ${PORT}`));
-  
+const http = require('http');
+const path = require('path');
+
+const app = express();
+const server = http.createServer(app);
+
+app.use(express.static(path.join(__dirname, 'src')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, INDEX));
+});
+
+server.listen(PORT, () => {
+  console.log(`Listening on ${PORT}`);
+});
+
+
+
+
 const { Server } = require('ws');
+const { createServer } = require('wss');
 
 const ws = new Server({ server });
-
+const connectedClients = new Set(); // Using Set to ensure unique clients
 ws.on('connection', (socket) => {
-    console.log('New client connected');
+  console.log('New client connected');
+  connectedClients.add(socket);
 
-    socket.on('message', (msg) => {
-    
+  // Send the new client the list of connected clients
+  connectedClients.forEach((client) => {
+    if (client.readyState === socket.OPEN) {
+      client.send(JSON.stringify({ name: 'Server', message: connectedClients.size, eventType: 'connection' }));
+    }
+  });
+
+  socket.on('message', (msg) => {
     // Parse the received JSON data
-        const data = JSON.parse(msg);
-        console.log(data);
-        ws.clients.forEach((client) => {
-            if(client!==socket && client.readyState === socket.OPEN)
-             client.send(JSON.stringify({ name: data.name, message: data.message,eventType:data.eventType }));
-        });
-});
+    const data = JSON.parse(msg);
+    console.log(data);
+    connectedClients.forEach((client) => {
+      if (client !== socket && client.readyState === socket.OPEN) {
+        client.send(JSON.stringify({ name: data.name, message: data.message, eventType: data.eventType }));
+      }
+    });
+  });
 
+  socket.on('close', () => {
+    console.log('Client has disconnected');
+    connectedClients.delete(socket);
+    connectedClients.forEach((client) => {
+      if (client.readyState === socket.OPEN) {
+        client.send(JSON.stringify({ name: 'Server', message: connectedClients.size, eventType: 'connection' }));
+      }
+    });
+  });
 });
+app.use(express.static(path.join(__dirname, '.')));
