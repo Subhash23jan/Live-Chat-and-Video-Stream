@@ -36,6 +36,9 @@
     <div class="toast">
         You can't send empty messages.
     </div>
+    <div class="join">
+
+    </div>
 
 </body>
 <script>
@@ -48,16 +51,28 @@
     const sendButton = document.getElementById('send');
     const typingCard = document.getElementById('typingIndicator');
     const typingContainer = document.querySelector('.typing-container');
+    const joinContainer = document.querySelector('.join');
     const typingMessageHolder = document.querySelector('.typing-message-holder');
     const showTypingButton = document.getElementById('showTypings');
     let messageMap = new Map();
+    const searchTyper = document.querySelector('.search-typer');
+    let searchMessage = '';
     addTypingMessage();
-     //  const socket = new WebSocket('ws://localhost:3000');
-    const socket = new WebSocket('wss://live-chat-and-video-stream.onrender.com');
+    const socket = new WebSocket('ws://localhost:3000');
+    // const socket = new WebSocket('wss://live-chat-and-video-stream.onrender.com');
     socket.onopen = () => {
-        console.log('Connected to the server'); // This will be logged on the server
+        socket.send(JSON.stringify({
+            name: name,
+            message: 'joined the chat',
+            eventType: 'connection'
+        })); // This will be logged on the server
     }
     socket.onclose = () => {
+        socket.send(JSON.stringify({
+            name: name,
+            message: 'left the chat',
+            eventType: 'disconnection'
+        }));
         console.log('Disconnected from the server');
     }
     sendButton.addEventListener('click', sendMessage);
@@ -66,6 +81,10 @@
         if (event.key === 'Enter') {
             sendMessage(event);
         }
+    });
+    searchTyper.addEventListener('input', function (event) {
+        searchMessage = event.target.value;
+        addTypingMessage();
     });
     input.addEventListener('input', sendTypingMessage);
     sendButton.addEventListener('submit', sendMessage);
@@ -78,26 +97,34 @@
         }));
     }
     function addTypingMessage() {
-        if (messageMap.length == 0) {
+        typingMessageHolder.innerHTML = '';
+        typingCard.innerText = messageMap.size + ' people are typing..';
+        if (messageMap.size == 0) {
+            const typingMessage = document.createElement('div'); // Create a new div for each message
+            typingMessage.style.backgroundImage = 'linear-gradient(to right, #00FFFF, #00FF00)';
+            typingMessage.classList.add('typing-message'); // Add the class to the typing message div
+            typingMessage.innerText = `No one is typing`; // Set the inner text for the message
+            typingMessageHolder.appendChild(typingMessage);
             return;
         }
         typingMessageHolder.innerHTML = '';
         for (let [key, value] of messageMap.entries()) {
+            if (searchMessage.trim() != '' && key.toLowerCase().indexOf(searchMessage.toLowerCase()) == -1) {
+                continue;
+            }
             const message = value;
             const userName = key;
-            for (let i = 0; i < 1; i++) {
-                const typingMessage = document.createElement('div'); // Create a new div for each message
-                typingMessage.classList.add('typing-message'); // Add the class to the typing message div
-                typingMessage.innerText = `${userName}   :    ${message}..`; // Set the inner text for the message
+            const typingMessage = document.createElement('div'); // Create a new div for each message
+            typingMessage.classList.add('typing-message'); // Add the class to the typing message div
+            typingMessage.innerText = `${userName}   :    ${message}..`; // Set the inner text for the message
 
-                for (let j = 0; j < 3; j++) {
-                    const dot = document.createElement('div');
-                    dot.classList.add('dot');
-                    typingMessage.appendChild(dot); // Append the dot to the typing message div
-                }
-
-                typingMessageHolder.appendChild(typingMessage); // Append the typing message div to the holder
+            for (let j = 0; j < 3; j++) {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                typingMessage.appendChild(dot); // Append the dot to the typing message div
             }
+
+            typingMessageHolder.appendChild(typingMessage); // Append the typing message div to the holder
         }
     }
     function sendMessage(event) {
@@ -120,12 +147,27 @@
     socket.onmessage = (event) => {
         const newChat = JSON.parse(event.data);
         if (newChat.eventType == 'connection') {
+            var joinContainer = document.querySelector('.join');
+            joinContainer.classList.add('show-join');
+            joinContainer.innerText = newChat.name + ' joined the chat';
+            setTimeout(function () {
+                joinContainer.classList.remove('show-join');
+            }, 3000);
+            document.querySelector('.card').innerText = newChat.message + ' people in online';
+            return;
+        }else if (newChat.eventType == 'disconnection') {
+            var joinContainer = document.querySelector('.join');
+            joinContainer.classList.add('show-join');
+            joinContainer.innerText = newChat.name + ' joined the chat';
+            setTimeout(function () {
+                joinContainer.classList.remove('show-join');
+            }, 3000);
             document.querySelector('.card').innerText = newChat.message + ' people in online';
             return;
         }
         if (newChat.eventType == 'typing') {
             messageMap.set(newChat.name, newChat.message);
-            if (newChat.length == 0 || newChat.message=='') {
+            if (newChat.length == 0 || newChat.message == '') {
                 messageMap.delete(newChat.name);
             }
             addTypingMessage();
@@ -152,7 +194,7 @@
         toast.classList.add('show-toast');
         setTimeout(function () {
             toast.classList.remove('show-toast');
-        }, 3000); // Change 3000 to the desired duration of the toast in milliseconds
+        }, 2000); // Change 3000 to the desired duration of the toast in milliseconds
     }
 
     function scrollToBottom() {
@@ -164,7 +206,7 @@
 
     // Listen for changes in chat container's content
     chatContainer.addEventListener('DOMSubtreeModified', scrollToBottom);
-    // chatContainer.addEventListener('MutationObserver ', scrollToBottom);
+    //chatContainer.addEventListener('MutationObserver ', scrollToBottom);
 
 </script>
 

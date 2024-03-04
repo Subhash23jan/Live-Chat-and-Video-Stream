@@ -30,19 +30,29 @@ ws.on('connection', (socket) => {
   connectedClients.add(socket);
 
   // Send the new client the list of connected clients
-  connectedClients.forEach((client) => {
-    if (client.readyState === socket.OPEN) {
-      client.send(JSON.stringify({ name: 'Server', message: connectedClients.size, eventType: 'connection' }));
-    }
-  });
+  // connectedClients.forEach((client) => {
+  //   if (client.readyState === socket.OPEN) {
+  //     client.send(JSON.stringify({ name: 'Server', message: connectedClients.size, eventType: 'connection' }));
+  //   }
+  // });
 
   socket.on('message', (msg) => {
     // Parse the received JSON data
     const data = JSON.parse(msg);
-    console.log(data);
+  //  console.log(data);
     connectedClients.forEach((client) => {
-      if (client !== socket && client.readyState === socket.OPEN) {
-        client.send(JSON.stringify({ name: data.name, message: data.message, eventType: data.eventType }));
+      if (client.readyState === socket.OPEN) {
+        if (data.eventType === 'connection') {
+          if (client !== socket) client.send(JSON.stringify({ name: data.name, message: connectedClients.size, eventType: data.eventType }));
+          else client.send(JSON.stringify({ name: 'You', message: connectedClients.size,  eventType: data.eventType }));
+        }
+        else if (data.eventType === 'disconnection') {
+         if (client !== socket) client.send(JSON.stringify({ name: data.name, message: connectedClients.size, eventType: data.eventType }));
+        else client.send(JSON.stringify({ name: 'You', message: connectedClients.size,  eventType: data.eventType }));
+        } else if(client !== socket ){
+           client.send(JSON.stringify({ name: data.name, message: data.message, eventType: data.eventType }));
+        }
+       
       }
     });
   });
@@ -50,11 +60,11 @@ ws.on('connection', (socket) => {
   socket.on('close', () => {
     console.log('Client has disconnected');
     connectedClients.delete(socket);
-    connectedClients.forEach((client) => {
-      if (client.readyState === socket.OPEN) {
-        client.send(JSON.stringify({ name: 'Server', message: connectedClients.size, eventType: 'connection' }));
-      }
-    });
+    // connectedClients.forEach((client) => {
+    //   if (client.readyState === socket.OPEN) {
+    //     client.send(JSON.stringify({ name: 'Server', message: connectedClients.size, eventType: 'connection' }));
+    //   }
+    // });
   });
 });
 app.use(express.static(path.join(__dirname, '.')));
