@@ -58,8 +58,8 @@
     const searchTyper = document.querySelector('.search-typer');
     let searchMessage = '';
     addTypingMessage();
-    //const socket = new WebSocket('ws://localhost:3000');
-     const socket = new WebSocket('wss://live-chat-and-video-stream.onrender.com');
+  //  const socket = new WebSocket('ws://localhost:3000');
+    const socket = new WebSocket('wss://live-chat-and-video-stream.onrender.com');
     socket.onopen = () => {
         socket.send(JSON.stringify({
             name: name,
@@ -104,6 +104,7 @@
             typingMessage.style.backgroundImage = 'linear-gradient(to right, #00FFFF, #00FF00)';
             typingMessage.classList.add('typing-message'); // Add the class to the typing message div
             typingMessage.innerText = `No one is typing`; // Set the inner text for the message
+            typingMessage.style.width = '300px';
             typingMessageHolder.appendChild(typingMessage);
             return;
         }
@@ -117,13 +118,11 @@
             const typingMessage = document.createElement('div'); // Create a new div for each message
             typingMessage.classList.add('typing-message'); // Add the class to the typing message div
             typingMessage.innerText = `${userName}   :    ${message}..`; // Set the inner text for the message
-
             for (let j = 0; j < 3; j++) {
                 const dot = document.createElement('div');
                 dot.classList.add('dot');
                 typingMessage.appendChild(dot); // Append the dot to the typing message div
             }
-
             typingMessageHolder.appendChild(typingMessage); // Append the typing message div to the holder
         }
     }
@@ -140,8 +139,13 @@
             message: message,
             eventType: 'send-message'
         }));
-        chatContainer.innerHTML += `<div style="margin-left: 20px;">You: ${message}</div><br>`;
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('message-container');
+        messageContainer.classList.add('my-message');
+        messageContainer.innerText = 'you' + ' : ' + message;
+        chatContainer.appendChild(messageContainer);
         input.value = '';
+        sendTypingMessage();
     }
 
     socket.onmessage = (event) => {
@@ -155,7 +159,7 @@
             }, 3000);
             document.querySelector('.card').innerText = newChat.message + ' people in online';
             return;
-        }else if (newChat.eventType == 'disconnection') {
+        } else if (newChat.eventType == 'disconnection') {
             var joinContainer = document.querySelector('.join');
             joinContainer.classList.add('show-join');
             joinContainer.innerText = newChat.name + ' joined the chat';
@@ -174,7 +178,10 @@
             return;
         }
         console.log('Received message:', newChat.name, newChat.message);
-        chatContainer.innerHTML += `<div style="margin-right: 20px; text-align: right;">${newChat.name} : ${newChat.message}</div><br>`;
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('message-container');
+        messageContainer.innerText = newChat.name + ' : ' + newChat.message;
+        chatContainer.appendChild(messageContainer);
     }
 
     showTypingButton.addEventListener('click', function () {
