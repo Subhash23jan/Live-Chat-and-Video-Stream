@@ -27,6 +27,7 @@ const ws = new Server({ server });
 const connectedClients = new Set(); // Using Set to ensure unique clients
 ws.on('connection', (socket) => {
   console.log('New client connected');
+  //console.log(socket);
   connectedClients.add(socket);
 
   // Send the new client the list of connected clients
