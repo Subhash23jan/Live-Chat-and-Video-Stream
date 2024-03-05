@@ -58,8 +58,8 @@
     const searchTyper = document.querySelector('.search-typer');
     let searchMessage = '';
     addTypingMessage();
-    const socket = new WebSocket('ws://localhost:3000');
-    //const socket = new WebSocket('wss://live-chat-and-video-stream.onrender.com');
+   // const socket = new WebSocket('ws://localhost:3000');
+    const socket = new WebSocket('wss://live-chat-and-video-stream.onrender.com');
     socket.onopen = () => {
         socket.send(JSON.stringify({
             name: name,
