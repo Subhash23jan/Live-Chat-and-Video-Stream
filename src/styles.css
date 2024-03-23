@@ -197,6 +197,8 @@
         height: 35px;
         justify-self: center;
         border-radius: 20px;
+        background: none;
+        font-style: italic;
         overflow: auto;
         border: 1px solid black;
         border-bottom: 1px solid black;
@@ -211,17 +213,23 @@
     .typing-message{
         display: flex;
         width: fit-content;
-        padding-right: 10px;
-        margin-top: 5px;
-        margin-right: 1px;
-        font-size: 13px; /* Added "px" to font-size */
+        border-radius: 10px;
+        padding: 10px; /* Combine padding-right and padding */
+        margin: 5px 1px; /* Combine margin-top and margin-right */
+        font-size: 13.5px;
         font-weight: 400;
         margin-left: 5px;
-        background: linear-gradient(to right, #25D366, #128C7E);
-        color: white;
-        padding: 10px;
+        background:  #1c70df; /* Set background color to white */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adjust box-shadow */
+        color: white; /* Change text color to black for better visibility */
         border-radius: 5px;
-        box-shadow: 0px 14px 6px rgba(20, 18, 18, 0.1); /* Added box-shadow for floating effect */
+    }
+    .no-one-type{
+        background-color: none;
+        background: none;
+        font-style: italic;
+        color: black;
+        font-size: 15px;
     }
    .dot {
     overflow: none;
@@ -229,8 +237,10 @@
     width: 4px;
     margin-top: 2px;
     height: 4px;
+    padding: 0.4px;
+    margin: 0.5px;
     border-radius: 50%;
-    background-color: #cdd1d4;
+    background-color: #c5d0d9;
 }
 
     .typing-message .dot:nth-last-child(1) {

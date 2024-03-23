@@ -101,9 +101,10 @@
         typingCard.innerText = messageMap.size + ' people are typing..';
         if (messageMap.size == 0) {
             const typingMessage = document.createElement('div'); // Create a new div for each message
-            typingMessage.style.backgroundImage = 'linear-gradient(to right, #00FFFF, #00FF00)';
+           //a typingMessage.style.backgroundImage = 'linear-gradient(to right, #00FFFF, #00FF00)';
             typingMessage.classList.add('typing-message'); // Add the class to the typing message div
-            typingMessage.innerText = `No one is typing`; // Set the inner text for the message
+            typingMessage.classList.add('no-one-type');
+            typingMessage.innerText = `No one is typing!!`; // Set the inner text for the message
             typingMessage.style.width = '300px';
             typingMessageHolder.appendChild(typingMessage);
             return;

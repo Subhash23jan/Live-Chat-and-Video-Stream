@@ -18,8 +18,6 @@ server.listen(PORT, () => {
 });
 
 
-
-
 const { Server } = require('ws');
 const { createServer } = require('wss');
 
@@ -45,7 +43,7 @@ ws.on('connection', (socket) => {
       if (client.readyState === socket.OPEN) {
         if (data.eventType === 'connection') {
           if (client !== socket) client.send(JSON.stringify({ name: data.name, message: connectedClients.size, eventType: data.eventType }));
-          else client.send(JSON.stringify({ name: 'You', message: connectedClients.size,  eventType: data.eventType }));
+              else client.send(JSON.stringify({ name: 'You', message: connectedClients.size,  eventType: data.eventType }));
         }
         else if (data.eventType === 'disconnection') {
          if (client !== socket) client.send(JSON.stringify({ name: data.name, message: connectedClients.size, eventType: data.eventType }));
@@ -53,7 +51,6 @@ ws.on('connection', (socket) => {
         } else if(client !== socket ){
            client.send(JSON.stringify({ name: data.name, message: data.message, eventType: data.eventType }));
         }
-       
       }
     });
   });
