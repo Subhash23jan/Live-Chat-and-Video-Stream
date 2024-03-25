@@ -3,16 +3,25 @@ const INDEX = '/index.html';
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const visitorTrack = require('./visitors_tracking/files');
+const adminAuthentication = require('./authentication/admin');
+const downloadVisitorData = require('./visitors_tracking/files');
+
 
 const app = express();
+app.use(express.json());
 const server = http.createServer(app);
-
 app.use(express.static(path.join(__dirname, 'src')));
-
-app.get('/', (req, res) => {
+// app.use(visitorTrack);
+app.get('/',visitorTrack, (req, res) => {
   res.sendFile(path.join(__dirname, INDEX));
 });
-
+app.get('/details', adminAuthentication, (req, res) => { 
+    console.log('Download Visitor Data');
+  const filePath = path.join(__dirname, '/visitors_tracking/visitors.json');
+  console.log(filePath);
+    res.download(filePath);
+});
 server.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
